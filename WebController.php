@@ -283,23 +283,6 @@ class WebController extends \yii\web\Controller{
     public function end() {
         ob_flush();
         ob_clean();
-        /**
-         * 关闭非持久化的数据库连接
-         */
-        $dbConfig =  require(Yii::getAlias('@common').'/config/db.php');
-        $keys = array_keys($dbConfig);
-        if ($keys) {
-            foreach($keys as $item) {
-                $dbObject = \Yii::$app->get($item);
-                if ($dbObject instanceof \yii\db\Connection) {
-                    if (!isset($dbObject->attributes[\PDO::ATTR_PERSISTENT])) {
-                        if ($dbObject->getIsActive()) {
-                            $dbObject->close();
-                        }
-                    }
-                }
-            }
-        }
         Yii::$app->end();
     }
 
