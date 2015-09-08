@@ -126,9 +126,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
                         $row = parent::find()->where([static::$pk=>$key])->asArray()->one();
                         if ($row) {
                             if (Yii::$app->cache->exists($cache_key)) {
-                                Yii::$app->cache->set($cache_key, $row, Yii::$app->params['ttl']);
+                                Yii::$app->cache->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
                             } else {
-                                Yii::$app->cache->add($cache_key, $row, Yii::$app->params['ttl']);
+                                Yii::$app->cache->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
                             }
 
                         }
@@ -164,9 +164,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
         $row = parent::findByCondition($condition);
         if ($row && isset($condition[static::$pk]) && self::allowFromCache($condition)) {
             if (Yii::$app->cache->exists($cache_key)) {
-                Yii::$app->cache->set($cache_key, $row, Yii::$app->params['ttl']);
+                Yii::$app->cache->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
             } else {
-                Yii::$app->cache->add($cache_key, $row, Yii::$app->params['ttl']);
+                Yii::$app->cache->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
             }
         }
         return $row;
