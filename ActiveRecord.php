@@ -9,7 +9,9 @@ namespace yii\liuxy;
 
 use Yii;
 use yii\db\Exception;
+use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
+use yii\helpers\StringHelper;
 
 /**
  * 基于Yii2的自带基于cache（主键列）、分表的数据库操作
@@ -41,7 +43,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
      * @return string
      */
     public static function tableName() {
-        return '{{%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . '}}' . static::shardTableRule();
+        return '{{%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . static::shardTableRule() . '}}';
     }
 
     /**
