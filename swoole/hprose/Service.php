@@ -7,6 +7,7 @@
 namespace yii\liuxy\swoole\hprose;
 
 use Yii;
+
 /**
  *
  * 接口服务基类
@@ -16,11 +17,21 @@ use Yii;
 
 abstract class Service {
 	/**
-	 * @var \yii\liuxy\swoole\base\Application
+	 * @var array
 	 */
-	protected $app = false;
-	public function __construct($app) {
-		$this->app = $app;
+	public $config = false;
+	/**
+	 * @var \swoole_server
+	 */
+	public $server = false;
+
+	/**
+	 * @param array $config
+	 * @param \swoole_server $server
+	 */
+	public function __construct($config, $server) {
+		$this->config = $config;
+		$this->server = $server;
 	}
 }
 

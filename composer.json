@@ -1,10 +1,10 @@
 {
     "name": "liuxy/yii2-extension",
+    "version": "1.1.0.0",
     "description": "Yii2 backend template https://github.com/liupdhc/yii2-liuxy-extension",   
     "keywords": ["yii", "extension"],
     "license": "BSD-3-Clause",
     "type": "yii2-extension",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "liupeng",
@@ -18,6 +18,6 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "yiisoft/yii2": "~2.0.4"
+        "yiisoft/yii2": "~2.0.6"
     }
 }

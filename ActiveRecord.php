@@ -9,7 +9,8 @@ namespace yii\liuxy;
 
 use Yii;
 use yii\db\Exception;
-use yii\helpers\VarDumper;
+use yii\helpers\Inflector;
+use yii\helpers\StringHelper;
 
 /**
  * 基于Yii2的自带基于cache（主键列）、分表的数据库操作
@@ -37,11 +38,20 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
     public static $subTableKey = false;
 
     /**
+     * crc32计算整数hash值
+     * @param $value
+     * @return int
+     */
+    public static function tableHash($value) {
+        return crc32($value);
+    }
+
+    /**
      * 支持分表散列获取表名
      * @return string
      */
     public static function tableName() {
-        return '{{%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . '}}' . static::shardTableRule();
+        return '{{%' . Inflector::camel2id(StringHelper::basename(get_called_class()), '_') . static::shardTableRule() . '}}';
     }
 
     /**
@@ -89,8 +99,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
         if ($result) {
             if (self::enableCache()) {
                 Yii::trace('delete cache:'.self::getCacheKey($this->getAttribute(static::$pk)), __METHOD__);
-                Yii::$app->cache->delete(self::getCacheKey($this->getAttribute(static::$pk)));
-                Yii::$app->cache->delete(self::getCacheKey($this->getAttribute(static::$pk), false));
+                $cacheInstantce = static::getCache();
+                $cacheInstantce->delete(self::getCacheKey($this->getAttribute(static::$pk)));
+                $cacheInstantce->delete(self::getCacheKey($this->getAttribute(static::$pk), false));
             }
         }
         return $result;
@@ -113,22 +124,23 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
                 }
             } else {
                 if (self::enableCache()) {
+                    $cacheInstantce = static::getCache();
                     if (!$array) {
                         return self::findByCondition([static::$pk=>$key]);
                     } else {
                         $cache_key = self::getCacheKey($key, $array);
                         Yii::trace('from cache array:'.$cache_key, __METHOD__);
-                        $row = Yii::$app->cache->get($cache_key);
+                        $row =  $cacheInstantce->get($cache_key);
                         if ($row) {
                             return $row;
                         }
 
                         $row = parent::find()->where([static::$pk=>$key])->asArray()->one();
                         if ($row) {
-                            if (Yii::$app->cache->exists($cache_key)) {
-                                Yii::$app->cache->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
+                            if ($cacheInstantce->exists($cache_key)) {
+                                $cacheInstantce->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
                             } else {
-                                Yii::$app->cache->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
+                                $cacheInstantce->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
                             }
 
                         }
@@ -150,11 +162,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
      * @return mixed|null|static
      */
     public static function findByCondition($condition) {
+
+        $cacheInstantce = static::getCache();
         if (isset($condition[static::$pk])) {
             $cache_key = self::getCacheKey($condition[static::$pk], false);
             Yii::trace('from cache object:'.$cache_key, __METHOD__);
             if (self::allowFromCache($condition)) {
-                $row = Yii::$app->cache->get($cache_key);;
+                $row =  $cacheInstantce->get($cache_key);;
                 if ($row) {
                     return $row;
                 }
@@ -163,13 +177,25 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
 
         $row = parent::findByCondition($condition);
         if ($row && isset($condition[static::$pk]) && self::allowFromCache($condition)) {
-            if (Yii::$app->cache->exists($cache_key)) {
-                Yii::$app->cache->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
+            if ($cacheInstantce->exists($cache_key)) {
+                 static::getCache()->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
             } else {
-                Yii::$app->cache->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
+                $cacheInstantce->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
             }
         }
         return $row;
+    }
+
+    public static function updateAll ($attributes , $condition = '' , $params = []) {
+        $ret = parent::updateAll ($attributes , $condition , $params);
+        if ($ret && self::allowFromCache($condition)) {
+            $cache_key = self::getCacheKey($condition[static::$pk], true);
+            Yii::trace('delete cache:'.$cache_key, __METHOD__);
+            static::getCache()->delete($cache_key);
+            $cache_key = self::getCacheKey($condition[static::$pk], false);
+            static::getCache()->delete($cache_key);
+        }
+        return $ret;
     }
 
     /**
@@ -181,9 +207,11 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
     public static function deteteAll($condition, $params = []) {
         $ret = parent::deleteAll($condition, $params);
         if ($ret && self::allowFromCache($condition)) {
-            $cache_key = self::getCacheKey($condition[static::$pk], false);
+            $cache_key = self::getCacheKey($condition[static::$pk], true);
             Yii::trace('delete cache:'.$cache_key, __METHOD__);
-            Yii::$app->cache->delete($cache_key);
+            static::getCache()->delete($cache_key);
+            $cache_key = self::getCacheKey($condition[static::$pk], false);
+            static::getCache()->delete($cache_key);
         }
         return $ret;
     }
@@ -332,5 +360,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
      */
     public static function getFileCache() {
         return Yii::$app->fileCache;
+    }
+
+    /**
+     * 获取Redis连接实例
+     * @return \yii\liuxy\redis\ARedisConnection
+     */
+    public static function getRedis() {
+        return Yii::$app->redis;
     }
 }

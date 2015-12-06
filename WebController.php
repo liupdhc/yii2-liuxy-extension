@@ -128,9 +128,6 @@ class WebController extends \yii\web\Controller{
             setcookie('lang', $_REQUEST['lang']);
         } elseif (isset($_COOKIE['lang']) && $_COOKIE['lang'] != "") {
             Yii::$app->language = $_COOKIE['lang'];
-        } else if (isset($_SERVER ['HTTP_ACCEPT_LANGUAGE'])) {
-            $lang = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            Yii::$app->language = $lang[0];
         }
     }
 
@@ -269,7 +266,12 @@ class WebController extends \yii\web\Controller{
      */
     protected function get($key, $value = '') {
         $params = ArrayHelper::merge($_GET, $_POST);
-        $params = ArrayHelper::merge($params, $this->request->getBodyParams());
+
+        foreach($this->request->getBodyParams() as $k=>$val) {
+            if (!isset($params[$k])) {
+                $params[$k] = $val;
+            }
+        }
         if (isset($params[$key])) {
             return $params[$key];
         }

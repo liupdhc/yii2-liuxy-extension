@@ -5,6 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 namespace yii\liuxy\swoole\base;
+use yii\helpers\VarDumper;
 
 /**
  *
@@ -13,13 +14,41 @@ namespace yii\liuxy\swoole\base;
  * @since 1.0
  */
 
-class Application extends \yii\base\Application {
+class Application extends \yii\console\Application {
 
 	public function handleRequest($request) {
-		return true;
+		$response = $this->getResponse();
+		$response->exitStatus = 0;
+
+		return $response;
 	}
-	protected function registerErrorHandler(&$config) {
-        return true;
-    }
+
+	public function release($dbConfig = false) {
+//		ob_flush();
+//		ob_clean();
+		\Yii::trace('application release called.dbConfig='.VarDumper::dumpAsString($dbConfig),__METHOD__);
+		if ($dbConfig) {
+			/**
+			 * 关闭非持久化的数据库连接
+			 */
+			$keys = array_keys($dbConfig);
+			if ($keys) {
+				foreach($keys as $item) {
+					$dbObject = \Yii::$app->get($item);
+					if ($dbObject instanceof \yii\db\Connection) {
+						if (!isset($dbObject->attributes[\PDO::ATTR_PERSISTENT])) {
+							if ($dbObject->getIsActive()) {
+								\Yii::trace('db '.VarDumper::dumpAsString($dbObject).'close.',__METHOD__);
+								$dbObject->close();
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+
 }
 

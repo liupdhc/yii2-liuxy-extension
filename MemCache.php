@@ -20,7 +20,13 @@ class MemCache extends \yii\caching\MemCache {
      * @param int $offset   递增值
      */
     public function increment($key, $offset=1) {
-        return $this->getMemcache()->increment($this->buildKey($key),$offset);
+        $cacheKey = $this->buildKey($key);
+        $ret = $this->getMemcache()->increment($cacheKey,$offset);
+        if (!$ret) {
+            $this->getMemcache()->set($cacheKey, 1);
+            return 1;
+        }
+        return $ret;
     }
 
     /**
@@ -37,7 +43,7 @@ class MemCache extends \yii\caching\MemCache {
         if ($dependency !== null && $this->serializer !== false) {
             $dependency->evaluateDependency($this);
         }
-        if (is_string($value) && is_numeric(trim($value))) {
+        if (is_numeric($value)) {
             /**
              * 解决原子操作无法正确返回值
              */
@@ -56,7 +62,7 @@ class MemCache extends \yii\caching\MemCache {
         if ($dependency !== null && $this->serializer !== false) {
             $dependency->evaluateDependency($this);
         }
-        if (is_string($value) && is_numeric(trim($value))) {
+        if (is_numeric($value)) {
             /**
              * 解决原子操作无法正确返回值
              */
@@ -81,7 +87,7 @@ class MemCache extends \yii\caching\MemCache {
         $value = $this->getValue($key);
         if ($value === false || $this->serializer === false) {
             return $value;
-        } else if (is_string($value) && is_numeric(trim($value))) {
+        } else if (is_numeric(trim($value))) {
             /**
              * 解决原子操作无法正确返回值
              */
