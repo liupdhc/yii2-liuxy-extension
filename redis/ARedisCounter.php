@@ -70,9 +70,9 @@ class ARedisCounter extends ARedisEntity {
 
 	/**
 	 * Gets the value of the counter
-	 * @return integer the value of the counter
+	 * @return string the value of the counter
 	 */
 	public function __toString() {
-		return $this->getValue();
+		return (string)$this->getValue();
 	}
 }

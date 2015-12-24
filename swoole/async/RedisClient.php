@@ -1,12 +1,8 @@
 <?php
-/**
- * Copyright 2008-2015 OPPO Mobile Comm Corp., Ltd, All rights reserved.
- *
- * Project: html
- * FileName: RedisClient.php.
- * Author: root
- * Date: 9/9/15
- * Description: TODO
+ /**
+ * FileName: RedisClient.php
+ * Author: liupeng
+ * Date: 10/29/15
  */
 
 namespace yii\liuxy\swoole\async;

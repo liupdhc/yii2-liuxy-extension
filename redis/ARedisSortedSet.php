@@ -317,7 +317,7 @@ class ARedisSortedSet extends ARedisIterableEntity {
     public function afterAdd () {
         $event = new Event;
         $event->sender = $this;
-        $this->onAfterLock ($event);
+        $this->onAfterAdd ($event);
     }
 
     /**

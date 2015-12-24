@@ -1,6 +1,5 @@
 <?php
 /**
- * Copyright 2008-2015 OPPO Mobile Comm Corp., Ltd, All rights reserved.
  * FileName:SerializeHelpers.php
  * Author:Administrator
  * Create Date:2015-11-26

@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: 80124191
- * Date: 2015-11-20
- * Time: 12:44
+ * FileName: GrancefulWorker.php
+ * Author: liupeng
+ * Date: 10/29/15
  */
 
 namespace yii\liuxy\gearman;

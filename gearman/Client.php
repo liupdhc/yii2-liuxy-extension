@@ -1,7 +1,5 @@
 <?php
 /**
- * Copyright 2008-2015 OPPO Mobile Comm Corp., Ltd, All rights reserved.
- *
  * FileName: Client.php
  * Author: liupeng
  * Date: 10/29/15

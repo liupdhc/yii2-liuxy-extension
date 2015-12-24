@@ -1,8 +1,8 @@
 <?php
-/**
- * @link http://www.yiiframework.com/
- * @copyright Copyright (c) 2015 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ /**
+ * FileName: Application.php
+ * Author: liupeng
+ * Date: 10/29/15
  */
 namespace yii\liuxy\swoole\base;
 use yii\helpers\VarDumper;

@@ -21,7 +21,8 @@ class ARedisHash extends ARedisIterableEntity {
 	 * Adds an item to the hash
 	 * @param string $key the hash key
 	 * @param mixed $value the item to add
-	 * @return boolean true if the item was added, otherwise false
+	 * @return bool true if the item was added, otherwise false
+	 * @throws InvalidConfigException
 	 */
 	public function add($key, $value) {
 		if ($this->name === null) {
@@ -34,10 +35,12 @@ class ARedisHash extends ARedisIterableEntity {
 		$this->_count = null;
 		return true;
 	}
+
 	/**
 	 * Removes an item from the hash
 	 * @param string $key the hash key to remove
-	 * @return boolean true if the item was removed, otherwise false
+	 * @return bool true if the item was removed, otherwise false
+	 * @throws InvalidConfigException
 	 */
 	public function remove($key) {
 		if ($this->name === null) {
@@ -63,7 +66,8 @@ class ARedisHash extends ARedisIterableEntity {
 
 	/**
 	 * Gets the number of items in the hash
-	 * @return integer the number of items in the set
+	 * @return int the number of items in the set
+	 * @throws InvalidConfigException
 	 */
 	public function getCount() {
 		if ($this->_count === null) {
@@ -74,10 +78,12 @@ class ARedisHash extends ARedisIterableEntity {
 		}
 		return $this->_count;
 	}
+
 	/**
 	 * Gets all the members in the  sorted set
-	 * @param boolean $forceRefresh whether to force a refresh or not
-	 * @return array the members in the set
+	 * @param bool|false $forceRefresh whether to force a refresh or not
+	 * @return array	the members in the set
+	 * @throws InvalidConfigException
 	 */
 	public function getData($forceRefresh = false) {
 		if ($forceRefresh || $this->_data === null) {

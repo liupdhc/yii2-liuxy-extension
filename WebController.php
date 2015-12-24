@@ -1,20 +1,24 @@
 <?php
 /**
- * author: liupeng
- * createTime: 2015/6/22 23:24
- * description: ${TODO}
- * file: WebController.php
+ * FileName: WebController.php
+ * Author: liupeng
+ * Date: 10/29/15
  */
 
 namespace yii\liuxy;
 
 use Yii;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
 use yii\helpers\VarDumper;
+use yii\liuxy\protobuf\BaseMessage;
 
 class WebController extends \yii\web\Controller{
 
     public $enableCsrfValidation = false;
+    const ERROR_NOT_AUTHROIZE = 401;
+    const ERROR_REQUEST_TIMEOUT = 504;
+    const ERROR_BAD_REQUEST = 400;
 
     /**
      * 不需要验证用户登陆的的公开的actions
@@ -219,7 +223,7 @@ class WebController extends \yii\web\Controller{
         }
         $this->responded = true;
         $format = $this->getFormat();
-        $method = 'respondBy' . ucfirst($format) . 'Format';
+        $method = 'responseBy' . ucfirst($format) . 'Format';
         $valid = ((in_array('*', $this->formats) || in_array($format, $this->formats)) && method_exists($this, $method));
         if ($valid === false)
             throw new \Exception('Invalid request fromat : ' . $format);
@@ -229,7 +233,7 @@ class WebController extends \yii\web\Controller{
     /**
      * 输出html
      */
-    protected function respondByHtmlFormat() {
+    protected function responseByHtmlFormat() {
         headers_sent() or header('Content-Type: text/html; charset=utf-8');
         $response = $this->render($this->getTemplate(), $this->responseData);
         echo $response;
@@ -237,20 +241,11 @@ class WebController extends \yii\web\Controller{
     }
 
     /**
-     * 获取PHP的json配置项
-     * @return int
-     */
-    protected function getJsonEncodeOptions() {
-        $jsonEncodeOptions = $this->request->get('_pretty') == 'true' ? (JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : (JSON_UNESCAPED_UNICODE);
-        return $jsonEncodeOptions;
-    }
-
-    /**
      * 输出json
      */
-    protected function respondByJsonFormat() {
+    protected function responseByJsonFormat() {
         headers_sent() or header('Content-Type: application/json; charset=utf-8');
-        $response = json_encode($this->responseData, $this->getJsonEncodeOptions());
+        $response = Json::encode($this->responseData);
         if ('' != ($callback = $this->request->get('callback'))) {
             $response = $callback . '(' . $response . ');';
         }
@@ -259,7 +254,26 @@ class WebController extends \yii\web\Controller{
     }
 
     /**
-     * 从请求中获取值
+     * 输出Protobuf格式,仅获取setResponseData('data',xxx)中的内容，结合code和msg返回，
+     * 要求定义的proto文件必须有code和msg参数
+     */
+    protected function responseByPbFormat() {
+        headers_sent() or header('Content-Type: application/x-protobuf; charset=utf-8');
+        if (!isset($this->responseData['data'])) {
+            $ret = new BaseMessage();
+            $ret->setCode($this->responseData['code']);
+            $ret->setMsg($this->responseData['msg']);
+            echo $ret->serializeToString();
+        } else if (is_object($this->responseData['data']) && $this->responseData['data'] instanceof \ProtobufMessage) {
+            $this->responseData['data']->setCode($this->responseData['code']);
+            $this->responseData['data']->setMsg($this->responseData['msg']);
+            echo $this->responseData['data']->serializeToString();
+        }
+        $this->end();
+    }
+
+    /**
+     * 从请求中获取值,包含POST和GET请求域以及通过php://input获取的数据
      * @param $key
      * @param string $value
      * @return string
@@ -267,6 +281,9 @@ class WebController extends \yii\web\Controller{
     protected function get($key, $value = '') {
         $params = ArrayHelper::merge($_GET, $_POST);
 
+        if (isset($params[$key])) {
+            return $params[$key];
+        }
         foreach($this->request->getBodyParams() as $k=>$val) {
             if (!isset($params[$k])) {
                 $params[$k] = $val;
@@ -275,7 +292,42 @@ class WebController extends \yii\web\Controller{
         if (isset($params[$key])) {
             return $params[$key];
         }
+        if ($this->request->getCookies()->has($key)) {
+            return $this->request->getCookies()->getValue($key);
+        }
         return $value;
+    }
+
+    /**
+     * 获取POST请求域中的数据
+     * @param $key
+     * @param string $value
+     * @return string
+     */
+    protected function post($key, $value = '') {
+        if (isset($_POST[$key])) {
+            return $_POST[$key];
+        }
+        return $value;
+    }
+
+    /**
+     * 获取请求客户端IP
+     * @return string
+     */
+    protected function getClientIp() {
+        $ip = $_SERVER['REMOTE_ADDR'];
+        if (isset($_SERVER['HTTP_CLIENT_IP']) && preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $_SERVER['HTTP_CLIENT_IP'])) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR']) AND preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
+            foreach ($matches[0] AS $xip) {
+                if (!preg_match('#^(10|172\.16|192\.168)\.#', $xip)) {
+                    $ip = $xip;
+                    break;
+                }
+            }
+        }
+        return $ip;
     }
 
     /**
@@ -305,10 +357,6 @@ class WebController extends \yii\web\Controller{
     }
 
     public function afterAction($action, $result) {
-        $errorHandler = Yii::$app->get('errorHandler');
-        if (!empty($errorHandler->exception)) {
-            $this->handleException($errorHandler->exception);
-        }
         $result = parent::afterAction($action, $result);
         if ($this->response->getStatusCode() == 200) {
             return $this->respondByFormat();

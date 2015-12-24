@@ -1,9 +1,8 @@
 <?php
 /**
- * author: liupeng
- * createTime: 2015/6/22 3:21
- * description: ${TODO}
- * file: Cache.php
+ * FileName: MemCache.php
+ * Author: liupeng
+ * Date: 10/29/15
  */
 
 namespace yii\liuxy;

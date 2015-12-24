@@ -2,7 +2,10 @@
 namespace yii\liuxy\redis;
 
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+
 /**
  * Represents a redis pub/sub channel.
  *
@@ -31,7 +34,7 @@ class ARedisChannel extends ARedisIterableEntity {
 	protected $_data = array();
 	/**
 	 * Subscribes to the channel
-	 * @return ARedisIterableChannel $this subscribed to the channel
+	 * @return ARedisChannel $this subscribed to the channel
 	 */
 	public function subscribe() {
 		if ($this->name === null) {
@@ -40,22 +43,25 @@ class ARedisChannel extends ARedisIterableEntity {
 		$this->getConnection()->getClient()->subscribe(array($this->name),array($this,"receiveMessage"));
 		return $this;
 	}
+
 	/**
 	 * Unsubscribes from the channel
-	 * @return ARedisIterableChannel $this unsubscribed from the channel
+	 * @throws Exception
 	 */
 	public function unsubscribe() {
-		if ($this->name === null) {
-			throw new InvalidConfigException(get_class($this)." requires a name!");
-		}
-		$this->getConnection()->getClient()->unsubscribe(array($this->name));
-		return $this;
+//		if ($this->name === null) {
+//			throw new InvalidConfigException(get_class($this)." requires a name!");
+//		}
+//		$this->getConnection()->getClient()->unsubscribe(array($this->name));
+//		return $this;
+		throw new NotSupportedException('Unsupport method');
 	}
 
 	/**
 	 * Publishes a message to the channel
 	 * @param string $message The message to publish
-	 * @return integer the number of clients that received the message
+	 * @return int	the number of clients that received the message
+	 * @throws InvalidConfigException
 	 */
 	public function publish($message) {
 		if ($this->name === null) {
@@ -66,7 +72,7 @@ class ARedisChannel extends ARedisIterableEntity {
 	}
 	/**
 	 * Receives a message from a subscribed channel
-	 * @param Redis $redis the redis client instance
+	 * @param \Redis $redis the redis client instance
 	 * @param string $channel the name of the channel
 	 * @param string $message the message content
 	 */
@@ -89,7 +95,7 @@ class ARedisChannel extends ARedisIterableEntity {
 
 	/**
 	 * This event is raised after a message is received
-	 * @param CEvent $event the event parameter
+	 * @param \yii\base\Event $event the event parameter
 	 */
 	public function onReceiveMessage($event)
 	{

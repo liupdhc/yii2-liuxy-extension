@@ -1,8 +1,6 @@
 <?php
 
 /**
- * Copyright 2008-2015 OPPO Mobile Comm Corp., Ltd, All rights reserved.
- *
  * FileName: IdGeneratorCounter.php
  * Author: liupeng
  * Date: 11/18/15

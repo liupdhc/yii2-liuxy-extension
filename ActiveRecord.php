@@ -10,7 +10,6 @@ namespace yii\liuxy;
 use Yii;
 use yii\db\Exception;
 use yii\helpers\Inflector;
-use yii\helpers\VarDumper;
 use yii\helpers\StringHelper;
 
 /**
@@ -110,7 +109,6 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
 
     /**
      * 根据主键获取记录（支持缓存）
-     * @see also self::findByCondition($condition)
      * @param $key  主键值
      * @param $array 是否返回数组
      * @param $forceDb 是否强制从数据库获取
@@ -119,7 +117,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
         if (static::$pk) {
             if ($forceDb) {
                 if (!$array) {
-                    return self::findByCondition([static::$pk=>$key]);
+                    return parent::findOne([static::$pk=>$key]);
                 } else {
                     return parent::find()->where([static::$pk=>$key])->asArray()->one();
                 }
@@ -127,7 +125,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
                 if (self::enableCache()) {
                     $cacheInstantce = static::getCache();
                     if (!$array) {
-                        return self::findByCondition([static::$pk=>$key]);
+                        return parent::findOne([static::$pk=>$key]);
                     } else {
                         $cache_key = self::getCacheKey($key, $array);
                         Yii::trace('from cache array:'.$cache_key, __METHOD__);
@@ -158,35 +156,12 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
     }
 
     /**
-     * 查找单个对象记录，支持主键缓存获取
-     * @param mixed $condition
-     * @return mixed|null|static
+     * 重写，支持主键的缓存自动更新
+     * @param array $attributes
+     * @param string $condition
+     * @param array $params
+     * @return int
      */
-    public static function findByCondition($condition) {
-
-        $cacheInstantce = static::getCache();
-        if (isset($condition[static::$pk])) {
-            $cache_key = self::getCacheKey($condition[static::$pk], false);
-            Yii::trace('from cache object:'.$cache_key, __METHOD__);
-            if (self::allowFromCache($condition)) {
-                $row =  $cacheInstantce->get($cache_key);;
-                if ($row) {
-                    return $row;
-                }
-            }
-        }
-
-        $row = parent::findByCondition($condition);
-        if ($row && isset($condition[static::$pk]) && self::allowFromCache($condition)) {
-            if ($cacheInstantce->exists($cache_key)) {
-                 static::getCache()->set($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
-            } else {
-                $cacheInstantce->add($cache_key, $row, isset(Yii::$app->params['ttl']) ? Yii::$app->params['ttl']:2592000);
-            }
-        }
-        return $row;
-    }
-
     public static function updateAll ($attributes , $condition = '' , $params = []) {
         $ret = parent::updateAll ($attributes , $condition , $params);
         if ($ret && self::allowFromCache($condition)) {

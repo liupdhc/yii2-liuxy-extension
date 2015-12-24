@@ -82,7 +82,6 @@ abstract class ARedisEntity extends Behavior {
 	}
 	/**
 	 * Detaches the entity from a component
-	 * @param CComponent $owner the owner component
 	 */
 	public function detach() {
 		parent::detach();
@@ -110,7 +109,7 @@ abstract class ARedisEntity extends Behavior {
 	public function getConnection()
 	{
 		if ($this->_connection === null) {
-			if (!isset(Yii::app()->redis)) {
+			if (!isset(Yii::$app->redis)) {
 				throw new InvalidConfigException(get_class($this)." expects a 'redis' application component");
 			}
 			$this->_connection = Yii::$app->redis;

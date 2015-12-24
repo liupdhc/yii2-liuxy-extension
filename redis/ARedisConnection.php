@@ -12,7 +12,7 @@ use yii\base\InvalidConfigException;
 class ARedisConnection extends Component {
 	/**
 	 * The redis client
-	 * @var Redis
+	 * @var \Redis
 	 */
 	protected $_client;
 
@@ -65,16 +65,16 @@ class ARedisConnection extends Component {
 
 	/**
      * Sets the redis slave to use with this connection
-     * @param Redis $slave the redis slave instance
+     * @param \Redis $slave the redis slave instance
      */
-    public function setSlave(Redis $_slave)
+    public function setSlave(\Redis $_slave)
     {
     	$this->_slave = $_slave;
     }
     
     /**
      * Gets the redis slave
-     * @return Redis the redis slave
+     * @return \Redis the redis slave
      */
     public function getSlave()
     {
@@ -83,16 +83,16 @@ class ARedisConnection extends Component {
 
 	/**
 	 * Sets the redis client to use with this connection
-	 * @param Redis $client the redis client instance
+	 * @param \Redis $client the redis client instance
 	 */
-	public function setClient(Redis $client)
+	public function setClient(\Redis $client)
 	{
 		$this->_client = $client;
 	}
 
 	/**
 	 * Gets the redis client
-	 * @return Redis the redis client
+	 * @return \Redis the redis client
 	 */
 	public function getClient()
 	{

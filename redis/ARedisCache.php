@@ -34,7 +34,8 @@ class ARedisCache extends Cache {
 
     /**
      * Gets the redis connection to use for caching
-     * @return ARedisConnection
+     * @return array|mixed|ARedisConnection
+     * @throws InvalidConfigException
      */
     public function getConnection () {
         if ($this->_connection === null) {
@@ -115,23 +116,22 @@ class ARedisCache extends Cache {
      * @return boolean whether flushing was successful or not
      */
     public function flush () {
-        if ($this->getConnection ()->getEnableSlaves ()) {
-            return (bool)$this->getConnection ()->getClient ()->flushDb () && (bool)$this->getConnection ()->getSlave ()->flushDb ();
-        } else {
-            return (bool)$this->getConnection ()->getClient ()->flushDb ();
-        }
+        return (bool)$this->getConnection ()->getClient ()->flushDb ();
     }
 
-    /*
-     * (non-PHPdoc) @see \yii\caching\Cache::getValue()
+    /**
+     * Get value from Cache
+     * @param string $key
+     * @return bool|string
+     * @throws InvalidConfigException
      */
     protected function getValue ($key) {
         // TODO Auto-generated method stub
         return $this->getConnection ()->getSlave ()->get ($key);
     }
 
-    /*
-     * (non-PHPdoc) @see \yii\caching\Cache::flushValues()
+    /**
+     * @see flush
      */
     protected function flushValues () {
         // TODO Auto-generated method stub

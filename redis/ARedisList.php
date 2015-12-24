@@ -18,10 +18,12 @@ use yii\liuxy\redis\collections\CList;
  * @package yii\liuxy\redis
  */
 class ARedisList extends ARedisIterableEntity {
+
     /**
      * Adds an item to the list
      * @param mixed $item the item to add
-     * @return boolean true if the item was added, otherwise false
+     * @return bool true if the item was added, otherwise false
+     * @throws InvalidConfigException
      */
     public function add ($item) {
         if ($this->name === null) {
@@ -38,7 +40,8 @@ class ARedisList extends ARedisIterableEntity {
     /**
      * Removes an item from the list
      * @param mixed $item the item to remove
-     * @return boolean true if the item was removed, otherwise false
+     * @return bool true if the item was removed, otherwise false
+     * @throws InvalidConfigException
      */
     public function remove ($item) {
         if ($this->name === null) {
@@ -64,7 +67,8 @@ class ARedisList extends ARedisIterableEntity {
     /**
      * Adds an item to the start of the list
      * @param mixed $item the item to add
-     * @return boolean true if the item was added, otherwise false
+     * @return bool true if the item was added, otherwise false
+     * @throws InvalidConfigException
      */
     public function unshift ($item) {
         if ($this->name === null) {
@@ -81,6 +85,7 @@ class ARedisList extends ARedisIterableEntity {
     /**
      * Removes and returns the first item from the list
      * @return mixed the item that was removed from the list
+     * @throws InvalidConfigException
      */
     public function shift () {
         if ($this->name === null) {
@@ -95,6 +100,7 @@ class ARedisList extends ARedisIterableEntity {
     /**
      * Removes and returns the last item from the list
      * @return mixed the item that was removed from the list
+     * @throws InvalidConfigException
      */
     public function pop () {
         if ($this->name === null) {
@@ -111,6 +117,7 @@ class ARedisList extends ARedisIterableEntity {
      * @param integer $start the 0 based index to start from
      * @param integer $stop the 0 based index to end at
      * @return array the items in the range
+     * @throws InvalidConfigException
      */
     public function range ($start = 0 , $stop = -1) {
         if ($this->name === null) {
@@ -124,6 +131,7 @@ class ARedisList extends ARedisIterableEntity {
      * @param integer $start the 0 based index to start from
      * @param integer $stop the 0 based index to end at
      * @return boolean true if the trim was successful
+     * @throws InvalidConfigException
      */
     public function trim ($start , $stop) {
         if ($this->name === null) {
@@ -135,6 +143,7 @@ class ARedisList extends ARedisIterableEntity {
     /**
      * Gets the number of items in the list
      * @return integer the number of items in the list
+     * @throws InvalidConfigException
      */
     public function getCount () {
         if ($this->_count === null) {
