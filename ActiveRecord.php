@@ -113,7 +113,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
      * @param $array 是否返回数组
      * @param $forceDb 是否强制从数据库获取
      */
-    public static function findeByCache($key, $array = true, $forceDb = false) {
+    public static function findByCache($key, $array = true, $forceDb = false) {
         if (static::$pk) {
             if ($forceDb) {
                 if (!$array) {
