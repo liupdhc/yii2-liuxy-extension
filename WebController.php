@@ -393,11 +393,10 @@ class WebController extends \yii\web\Controller{
     
     /**
      * 设置错误信息
-     * @param int $code
      * @param string $message
      */
-    protected function setError($code, $message) {
-        $this->setResponseData('code', $code);
+    protected function setError($message) {
+        $this->setResponseData('code', 500);
         $this->setResponseData('message', $message);
     }
 } 
