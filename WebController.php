@@ -336,7 +336,6 @@ class WebController extends \yii\web\Controller{
      */
     public function end() {
         ob_flush();
-        ob_clean();
         Yii::$app->end();
     }
 
@@ -362,14 +361,6 @@ class WebController extends \yii\web\Controller{
             return $this->respondByFormat();
         }
         return $result;
-    }
-
-    /**
-     * 处理异常信息
-     * @param $e
-     */
-    public function handleException($e) {
-        $this->setResponseData(['code' => $e->getCode(), 'msg' => $e->getMessage(),'exception'=>YII_DEBUG ? VarDumper::dumpAsString($e): '']);
     }
 
     /**
