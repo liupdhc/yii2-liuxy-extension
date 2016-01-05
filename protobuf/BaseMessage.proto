@@ -1,0 +1,5 @@
+message BaseMessage{
+	required int32 code = 1;//响应状态码
+	optional string msg = 2;//响应错误信息
+	optional string ukey = 3;//标识用户登录
+}
