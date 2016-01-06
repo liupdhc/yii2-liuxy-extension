@@ -106,6 +106,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord {
         }
         return $result;
     }
+    /**
+     * 兼容旧版本
+     * @see findByCache($key, $array, $forceDb)
+     */
+    public static function findeByCache($key, $array = true, $forceDb = false) {
+        return static::findByCache($key, $array, $forceDb);
+    }
 
     /**
      * 根据主键获取记录（支持缓存）
