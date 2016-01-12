@@ -102,4 +102,55 @@ class MemCache extends \yii\caching\MemCache {
             return false;
         }
     }
+    
+    /**
+     * 解决yii2的过期问题
+     * Stores a value identified by a key into cache if the cache does not contain this key.
+     * This is the implementation of the method declared in the parent class.
+     *
+     * @param string $key the key identifying the value to be cached
+     * @param string $value the value to be cached
+     * @param integer $duration the number of seconds in which the cached value will expire. 0 means never expire.
+     * @return boolean true if the value is successfully stored into cache, false otherwise
+     */
+    protected function addValue($key, $value, $duration)
+    {
+        $duration = $this->trimDuration($duration);
+        $expire = $duration > 0 ? $duration + time() : 0;
+
+        return $this->useMemcached ? $this->getMemcache()->add($key, $value, $expire) : $this->getMemcache()->add($key, $value, 0, $duration);
+    }
+
+    /**
+     * 解决yii2的过期问题
+     * Stores a value identified by a key in cache.
+     * This is the implementation of the method declared in the parent class.
+     *
+     * @param string $key the key identifying the value to be cached
+     * @param string $value the value to be cached
+     * @param integer $duration the number of seconds in which the cached value will expire. 0 means never expire.
+     * @return boolean true if the value is successfully stored into cache, false otherwise
+     */
+    protected function setValue($key, $value, $duration) {
+        $duration = $this->trimDuration($duration);
+        $expire = $duration > 0 ? $duration + time() : 0;
+        return $this->useMemcached ? $this->getMemcache()->set($key, $value, $expire) : $this->getMemcache()->set($key, $value, 0, $duration);
+    }
+
+    /**
+     * Trims duration to 30 days (2592000 seconds).
+     * @param integer $duration the number of seconds
+     * @return int the duration
+     */
+    protected function trimDuration($duration)
+    {
+        if ($duration > 2592000) {
+            \Yii::warning('Duration has been truncated to 30 days due to Memcache/Memcached limitation.', __METHOD__);
+            return 2592000;
+        }
+        if ($duration < 0) {
+            return 0;
+        }
+        return $duration;
+    }
 } 
